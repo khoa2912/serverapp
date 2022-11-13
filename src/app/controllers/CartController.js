@@ -74,6 +74,7 @@ class CartController {
                 .exec((error, cart) => {
                     console.log(cart)
                     if (error) return res.status(400).json({ error })
+                    if (cart === null) res.status(200).json({ cartItems: [] })
                     if (cart) {
                         let cartItems = {}
                         cart.cartItems.forEach((item, index) => {

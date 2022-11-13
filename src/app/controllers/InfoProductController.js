@@ -5,11 +5,10 @@ const InfoProduct = require('../models/infoProduct')
 // eslint-disable-next-line import/order
 const ObjectId = require('mongodb')
 
-
 // eslint-disable-next-line no-var
 class InfoProductController {
     async createInfoProduct(req, res, next) {
-        if(req.actions.includes('Them-thong-tin-loc-san-pham')) {
+        if (req.actions.includes('Them-thong-tin-loc-san-pham')) {
             const infoProduct = new InfoProduct({
                 name: req.body.name,
                 type: req.body.typeInfo,
@@ -22,9 +21,8 @@ class InfoProductController {
                     res.status(201).json({ infoProduct })
                 }
             })
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
@@ -35,9 +33,7 @@ class InfoProductController {
 
         try {
             const infoProducts = await InfoProduct.find({})
-                .populate(
-                    { path: 'user', select: '_id firstname lastname' }
-                )
+                .populate({ path: 'user', select: '_id firstname lastname' })
                 .exec()
             res.status(200).json({ infoProducts })
         } catch (error) {
@@ -46,18 +42,18 @@ class InfoProductController {
     }
 
     async updateInfoProduct(req, res, next) {
-        if(req.actions.includes('Chinh-sua-thong-tin-loc-san-pham')) {
-            InfoProduct.findOne({_id: req.body._id}, function(err, obj) {
+        if (req.actions.includes('Chinh-sua-thong-tin-loc-san-pham')) {
+            InfoProduct.findOne({ _id: req.body._id }, function (err, obj) {
                 InfoProduct.updateOne(
-                    { 
-                        _id: req.body._id, 
+                    {
+                        _id: req.body._id,
                     },
                     {
                         $set: {
                             name: req.body.name,
                             type: req.body.type,
-                            createdBy: obj.createdBy
-                        }
+                            createdBy: obj.createdBy,
+                        },
                     }
                 ).exec((error, infoProduct) => {
                     if (error) return res.status(400).json({ error })
@@ -65,29 +61,29 @@ class InfoProductController {
                         res.status(201).json({ infoProduct })
                     }
                 })
-            });
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+            })
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
     deleteInfoProductById = (req, res) => {
-        if(req.actions.includes('Xoa-thong-tin-loc-san-pham')) {
+        if (req.actions.includes('Xoa-thong-tin-loc-san-pham')) {
             const { infoProductId } = req.body.payload
             if (infoProductId) {
-                InfoProduct.deleteMany({ _id: infoProductId }).exec((error, result) => {
-                    if (error) return res.status(400).json({ error })
-                    if (result) {
-                        res.status(202).json({ result })
+                InfoProduct.deleteMany({ _id: infoProductId }).exec(
+                    (error, result) => {
+                        if (error) return res.status(400).json({ error })
+                        if (result) {
+                            res.status(202).json({ result })
+                        }
                     }
-                })
+                )
             } else {
                 res.status(400).json({ error: 'Params required' })
             }
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
@@ -98,19 +94,16 @@ class InfoProductController {
         }
         const searchModel = req.body
         const query = {}
-        if (
-            !!searchModel.TypeInfo &&
-            Array.isArray(searchModel.TypeInfo) &&
-            searchModel.TypeInfo.length > 0
-        ) {
+        if (!!searchModel.TypeInfo) {
             query.type = { $in: searchModel.TypeInfo }
         }
-        InfoProduct.paginate({ $and: [query] }, options).then(function (result) {
+        InfoProduct.paginate({ $and: [query] }, options).then(function (
+            result
+        ) {
             return res.json({
                 result,
             })
         })
     }
-
 }
 module.exports = new InfoProductController()

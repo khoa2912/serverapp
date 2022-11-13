@@ -10,7 +10,7 @@ const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 })
 // eslint-disable-next-line no-var
 class TagController {
     async createTag(req, res, next) {
-        if(req.actions.includes('Them-tag')) {
+        if (req.actions.includes('Them-tag')) {
             const tag = new Tag({
                 parentId: req.body.parentId,
                 tagName: req.body.tagName,
@@ -26,25 +26,16 @@ class TagController {
                     res.status(201).json({ tag })
                 }
             })
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
     getTags = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const tags = await Tag.find({})
-                .populate(
-                    { path: 'user', select: '_id firstname lastname' }
-                )
-                .populate(
-                    { path: 'parentId'}
-                )
+                .populate({ path: 'user', select: '_id firstname lastname' })
+                .populate({ path: 'parentId' })
                 .exec()
             res.status(200).json({ tags })
         } catch (error) {
@@ -53,11 +44,11 @@ class TagController {
     }
 
     async updateTag(req, res, next) {
-        if(req.actions.includes('Chinh-sua-tag')) {
-            Tag.findOne({_id: req.body._id}, function(err, obj) {
+        if (req.actions.includes('Chinh-sua-tag')) {
+            Tag.findOne({ _id: req.body._id }, function (err, obj) {
                 Tag.updateOne(
-                    { 
-                        _id: req.body._id, 
+                    {
+                        _id: req.body._id,
                     },
                     {
                         $set: {
@@ -65,8 +56,8 @@ class TagController {
                             tagSlug: slugify(req.body.tagName),
                             createdTime: obj.createdTime,
                             updatedTime: req.body.updatedTime,
-                            createdBy: obj.createdBy
-                        }
+                            createdBy: obj.createdBy,
+                        },
                     }
                 ).exec((error, tag) => {
                     if (error) return res.status(400).json({ error })
@@ -74,15 +65,14 @@ class TagController {
                         res.status(201).json({ tag })
                     }
                 })
-            });
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+            })
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
     deleteTagById = (req, res) => {
-        if(req.actions.includes('Xoa-tag')) {
+        if (req.actions.includes('Xoa-tag')) {
             const { tagId } = req.body.payload
             if (tagId) {
                 Tag.deleteMany({ _id: tagId }).exec((error, result) => {
@@ -94,9 +84,8 @@ class TagController {
             } else {
                 res.status(400).json({ error: 'Params required' })
             }
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
@@ -121,6 +110,5 @@ class TagController {
             })
         })
     }
-
 }
 module.exports = new TagController()

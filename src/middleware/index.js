@@ -17,15 +17,16 @@ exports.upload = multer({
     storage,
 })
 
-exports.requireSignin = async(req, res, next) => {
+exports.requireSignin = async (req, res, next) => {
     try {
         if (req.headers.authorization) {
             const token = req.headers.authorization.split(' ')[1]
             const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-            let actions = await RoleAction.findOne({ roleId: user.role }).populate('listAction')
-            req.actions = actions.listAction.map(x => x.actionSlug);
+            let actions = await RoleAction.findOne({
+                roleId: user.role,
+            }).populate('listAction')
+            req.actions = actions.listAction.map((x) => x.actionSlug)
 
-            
             req.user = user
             return next()
         }
@@ -39,7 +40,7 @@ exports.requireSignin = async(req, res, next) => {
     // jwt.decode()
 }
 exports.userMiddleware = (req, res, next) => {
-    if (req.user.role !== 'user') {
+    if (req.user.role !== '') {
         return res.status(400).json({
             message: 'User Access denied',
         })

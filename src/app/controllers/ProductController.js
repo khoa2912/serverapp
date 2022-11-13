@@ -21,95 +21,94 @@ cloudinary.config({
 mongoose.Promise = global.Promise
 function generateSortOptions(sortFields, sortAscending = true) {
     const sort = {}
-    const sortType = sortAscending ? 1 : -1
+    const sortType = sortAscending === 'asc' ? 1 : -1
     return new Promise((resolve) => {
         if (!!sortFields && sortFields.length > 0) {
-            sortFields.forEach((field) => {
-                switch (field) {
-                    case 'Product_Code': {
-                        sort.Product_Code = sortType
-                        break
-                    }
-                    case 'Product_Detail': {
-                        sort.Product_Detail = sortType
-                        break
-                    }
-                    case 'Product_Barcode': {
-                        sort.Product_Barcode = sortType
-                        break
-                    }
-                    case 'Product_Mass': {
-                        sort.Product_Mass = sortType
-                        break
-                    }
-                    case 'Product_Name': {
-                        sort.Product_Name = sortType
-                        break
-                    }
-                    case 'Product_Category': {
-                        sort.Product_Category = sortType
-                        break
-                    }
-                    case 'Product_Group': {
-                        sort.Product_Group = sortType
-                        break
-                    }
-                    case 'Product_Unit': {
-                        sort.Product_Unit = sortType
-                        break
-                    }
-                    case 'Product_Supplier': {
-                        sort.Product_Supplier = sortType
-                        break
-                    }
-                    case 'Product_Minstock': {
-                        sort.Product_Minstock = sortType
-                        break
-                    }
-                    case 'Product_Dimension': {
-                        sort.Product_Dimension = sortType
-                        break
-                    }
-                    case 'Product_Sellprice': {
-                        sort.Product_Sellprice = sortType
-                        break
-                    }
-                    case 'Product_Stockprice': {
-                        sort.Product_Stockprice = sortType
-                        break
-                    }
-                    case 'Product_Description': {
-                        sort.Product_Description = sortType
-                        break
-                    }
-                    case 'Product_Original': {
-                        sort.Product_Original = sortType
-                        break
-                    }
-                    case 'Status': {
-                        sort.Status = sortType
-                        break
-                    }
-                    case 'CreatedBy': {
-                        sort.CreatedBy = sortType
-                        break
-                    }
-                    case 'CreatedDate': {
-                        sort.CreatedDate = sortType
-                        break
-                    }
-                    case 'UpdatedBy': {
-                        sort.UpdatedBy = sortType
-                        break
-                    }
-                    case 'UpdatedDate': {
-                        sort.UpdatedDate = sortType
-                        break
-                    }
-                    default:
-                        break
+            switch (sortFields) {
+                case 'createdAt': {
+                    sort.createdAt = sortType
+                    break
                 }
-            })
+                case 'salePrice': {
+                    sort.salePrice = sortType
+                    break
+                }
+                case 'salePrice': {
+                    sort.salePrice = sortType
+                    break
+                }
+                case 'Product_Mass': {
+                    sort.Product_Mass = sortType
+                    break
+                }
+                case 'Product_Name': {
+                    sort.Product_Name = sortType
+                    break
+                }
+                case 'Product_Category': {
+                    sort.Product_Category = sortType
+                    break
+                }
+                case 'Product_Group': {
+                    sort.Product_Group = sortType
+                    break
+                }
+                case 'Product_Unit': {
+                    sort.Product_Unit = sortType
+                    break
+                }
+                case 'Product_Supplier': {
+                    sort.Product_Supplier = sortType
+                    break
+                }
+                case 'Product_Minstock': {
+                    sort.Product_Minstock = sortType
+                    break
+                }
+                case 'Product_Dimension': {
+                    sort.Product_Dimension = sortType
+                    break
+                }
+                case 'Product_Sellprice': {
+                    sort.Product_Sellprice = sortType
+                    break
+                }
+                case 'Product_Stockprice': {
+                    sort.Product_Stockprice = sortType
+                    break
+                }
+                case 'Product_Description': {
+                    sort.Product_Description = sortType
+                    break
+                }
+                case 'Product_Original': {
+                    sort.Product_Original = sortType
+                    break
+                }
+                case 'Status': {
+                    sort.Status = sortType
+                    break
+                }
+                case 'CreatedBy': {
+                    sort.CreatedBy = sortType
+                    break
+                }
+                case 'CreatedDate': {
+                    sort.CreatedDate = sortType
+                    break
+                }
+                case 'UpdatedBy': {
+                    sort.UpdatedBy = sortType
+                    break
+                }
+                case 'UpdatedDate': {
+                    sort.UpdatedDate = sortType
+                    break
+                }
+                default:
+                    break
+            }
+
             resolve(sort)
         } else {
             resolve({})
@@ -118,46 +117,45 @@ function generateSortOptions(sortFields, sortAscending = true) {
 }
 class ProductController {
     async create(req, res, next) {
-        if(req.actions.includes('Them-san-pham')) {
+        if (req.actions.includes('Them-san-pham')) {
             var productPicture = []
             if (req.body.productPicture.length > 0) {
                 productPicture = await req.body.productPicture.map((item) => {
                     return { img: item }
                 })
             }
-            
+
             let cpu = [
                 {
                     cpuId: req.body.cpuId,
                     name: req.body.nameCpu,
-                    type: req.body.typeCpu
-                }
+                    type: req.body.typeCpu,
+                },
             ]
 
             let color = [
                 {
                     colorId: req.body.colorId,
                     name: req.body.nameColor,
-                    type: req.body.typeColor
-                }
+                    type: req.body.typeColor,
+                },
             ]
 
             let ram = [
                 {
                     ramId: req.body.ramId,
                     name: req.body.nameRam,
-                    type: req.body.typeRam
-                }
+                    type: req.body.typeRam,
+                },
             ]
 
             let manhinh = [
                 {
                     screenId: req.body.screenId,
                     name: req.body.nameScreen,
-                    type: req.body.typeScreen
-                }
+                    type: req.body.typeScreen,
+                },
             ]
-
 
             let descriptionTable = [
                 {
@@ -192,21 +190,19 @@ class ProductController {
                     res.status(201).json({ product })
                 }
             })
-        }
-        else {
+        } else {
             // console.log('Khong du quyen')
-            return res.status(403).send('Khongduquyen');
-            
+            return res.status(403).send('Khongduquyen')
         }
     }
 
     // async updateProduct(req, res, next) {
-        // var productPicture = []
-        // if (req.files.length > 0) {
-        //     productPicture = req.files.map((file) => {
-        //         return { img: file.filename }
-        //     })
-        // }
+    // var productPicture = []
+    // if (req.files.length > 0) {
+    //     productPicture = req.files.map((file) => {
+    //         return { img: file.filename }
+    //     })
+    // }
     //     let descriptionTable = [
     //         {
     //             baohanh: req.body.timeBaoHanh,
@@ -247,13 +243,12 @@ class ProductController {
 
     updateProduct = async (req, res) => {
         var productPicture = []
-        var listPictureUpload = [];
-        var listPicture = [];
+        var listPictureUpload = []
+        var listPicture = []
         req.body.productPicture.map((item) => {
-            if(item.img) {
+            if (item.img) {
                 listPicture.push(item.img)
-            }
-            else {
+            } else {
                 listPictureUpload.push(item)
             }
         })
@@ -262,39 +257,38 @@ class ProductController {
             productPicture = productPicture.map((item) => {
                 return { img: item }
             })
-        }        
+        }
         let cpu = [
             {
                 cpuId: req.body.cpuId,
                 name: req.body.nameCpu,
-                type: req.body.typeCpu
-            }
+                type: req.body.typeCpu,
+            },
         ]
 
         let color = [
             {
                 colorId: req.body.colorId,
                 name: req.body.nameColor,
-                type: req.body.typeColor
-            }
+                type: req.body.typeColor,
+            },
         ]
 
         let ram = [
             {
                 ramId: req.body.ramId,
                 name: req.body.nameRam,
-                type: req.body.typeRam
-            }
+                type: req.body.typeRam,
+            },
         ]
 
         let manhinh = [
             {
                 screenId: req.body.screenId,
                 name: req.body.nameScreen,
-                type: req.body.typeScreen
-            }
+                type: req.body.typeScreen,
+            },
         ]
-
 
         let descriptionTable = [
             {
@@ -310,10 +304,10 @@ class ProductController {
                 khoiluong: req.body.khoiluong,
             },
         ]
-        Product.findOne({_id: req.body._id}, function(err, obj) {
+        Product.findOne({ _id: req.body._id }, function (err, obj) {
             Product.updateOne(
-                { 
-                    _id: req.body._id, 
+                {
+                    _id: req.body._id,
                 },
                 {
                     $set: {
@@ -326,7 +320,7 @@ class ProductController {
                         tag: req.body.listTag,
                         description: req.body.description,
                         descriptionTable: descriptionTable,
-                        category: req.body.categoryId
+                        category: req.body.categoryId,
                     },
                 }
             ).exec((error, product) => {
@@ -335,7 +329,7 @@ class ProductController {
                     res.status(201).json({ product })
                 }
             })
-        });
+        })
     }
 
     getProductRelated = async (req, res) => {
@@ -344,7 +338,10 @@ class ProductController {
         res.header('Access-Control-Allow-Credentials', true)
 
         try {
-            const products = await Product.find({category: req.body.categoryId, _id : {$nin: [req.body.productId]}})
+            const products = await Product.find({
+                category: req.body.categoryId,
+                _id: { $nin: [req.body.productId] },
+            })
                 .populate({ path: 'tag' })
                 .populate({ path: 'category', select: '_id name' })
                 .exec()
@@ -364,24 +361,22 @@ class ProductController {
                     return res.status(400).json({ error })
                 }
                 if (tag) {
-                    Product.find({ tag: tag._id }).exec(
-                        (error, products) => {
-                            if (error) {
-                                return res.status(400).json({ error })
-                            }
-
-                            if (tag.tagName) {
-                                if (products.length > 0) {
-                                    res.status(200).json({
-                                        tag,
-                                        products,
-                                    })
-                                }
-                            } else {
-                                res.status(200).json({ products })
-                            }
+                    Product.find({ tag: tag._id }).exec((error, products) => {
+                        if (error) {
+                            return res.status(400).json({ error })
                         }
-                    )
+
+                        if (tag.tagName) {
+                            if (products.length > 0) {
+                                res.status(200).json({
+                                    tag,
+                                    products,
+                                })
+                            }
+                        } else {
+                            res.status(200).json({ products })
+                        }
+                    })
                 }
             })
     }
@@ -419,33 +414,36 @@ class ProductController {
     getProductDetailsById = (req, res) => {
         const { productId } = req.params
         try {
-            Product.findOne({_id: productId}, function(err, obj) {
+            Product.findOne({ _id: productId }, function (err, obj) {
                 Product.updateOne(
-                    { 
-                        _id: productId, 
+                    {
+                        _id: productId,
                     },
                     {
                         $set: {
-                            view: obj.view + 1
-                        }
+                            view: obj?.view + 1,
+                        },
                     }
                 ).exec((error, product) => {
                     if (error) return res.status(400).json({ error })
                     if (product) {
-                        Product.findOne({_id: productId}, function(err, obj) {
-                            res.status(201).json({ product: obj })
-                        })
+                        Product.findOne(
+                            { _id: productId },
+                            function (err, obj) {
+                                res.status(201).json({ product: obj })
+                            }
+                        )
                         // res.status(201).json({ product })
                     }
                 })
-            });  
+            })
         } catch (error) {
             console.log(error)
         }
     }
     deleteProductById = (req, res) => {
         console.log(req.actions)
-        if(req.actions.includes('Xoa-san-pham')) {
+        if (req.actions.includes('Xoa-san-pham')) {
             const { productId } = req.body.payload
             if (productId) {
                 Product.deleteMany({ _id: productId }).exec((error, result) => {
@@ -457,17 +455,12 @@ class ProductController {
             } else {
                 res.status(400).json({ error: 'Params required' })
             }
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
     getProducts = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const products = await Product.find({})
                 .populate({ path: 'tag' })
@@ -493,112 +486,61 @@ class ProductController {
         }
     }
     search = async function (req, res) {
-        const query = {}
-        const { page } = req.body.searchOptions
-        const limit = parseInt(req.body.searchOptions.limit, 10)
-        const sortFields = req.body.searchOptions.sort
-        const sortAscending = req.body.searchOptions.sortAscending
-        //Tạo điều kiện sắp xếp
-        const sort = await generateSortOptions(sortFields, sortAscending)
+        const query = { descriptionTable: { $elemMatch: {} } }
+        const {
+            q,
+            sortOption,
+            categoryId,
+            ram,
+            cpu,
+            manhinh,
+            minPrice,
+            maxPrice,
+            tagid,
+        } = req.body.data.payload
+
+        const sort = await generateSortOptions(
+            sortOption.sortBy,
+            sortOption.sortOrder
+        )
         const options = {
-            //select:   'Status',
             sort,
-            page,
-            limit,
+            limit: 99,
             lean: true,
         }
 
-        const searchModel = req.body.searchModel
-
-        //Tạo query get data theo permissio
-        if (
-            typeof searchModel.Product_Code === 'string' &&
-            !!searchModel.Product_Code
-        ) {
-            query.Product_Code = {
-                $regex: new RegExp(searchModel.Product_Code, 'i'),
-            }
-        } else if (
-            typeof searchModel.Product_Code === 'object' &&
-            !!searchModel.Product_Code &&
-            searchModel.Product_Code.length > 0
-        ) {
-            query.Product_Code = { $in: searchModel.Product_Code }
-        } else if (
-            !!searchModel.Product_Code &&
-            Array.isArray(searchModel.Product_Code) &&
-            searchModel.Product_Code.length > 0
-        ) {
-            query.Product_Code = { $in: searchModel.Product_Code }
-        }
-        if (!!searchModel.Product_Name) {
-            query.Product_Name = {
-                $regex: new RegExp(searchModel.Product_Name, 'i'),
+        if (!!q) {
+            query.name = {
+                $regex: new RegExp(q, 'i'),
             }
         }
-        if (!!searchModel.Product_Description) {
-            query.Product_Description = {
-                $regex: new RegExp(searchModel.Product_Description, 'i'),
-            }
+        if (!!minPrice) {
+            query.salePrice = { $gte: minPrice }
         }
-        if (
-            !!searchModel.Product_Category &&
-            searchModel.Product_Category.length > 0
-        ) {
-            query.Product_Category = { $in: searchModel.Product_Category }
+        if (!!maxPrice) {
+            query.salePrice = { $lte: maxPrice }
         }
-        if (
-            !!searchModel.Product_Group &&
-            searchModel.Product_Group.length > 0
-        ) {
-            query.Product_Group = { $in: searchModel.Product_Group }
+        if (!!ram && ram.length !== 0) {
+            Object.assign(query.descriptionTable['$elemMatch'], {
+                ram: { $elemMatch: { ramId: { $in: ram } } },
+            })
         }
-        if (!!searchModel.Status && searchModel.Status.length > 0) {
-            query.Status = { $in: searchModel.Status }
+        if (!!cpu && cpu.length !== 0) {
+            Object.assign(query.descriptionTable['$elemMatch'], {
+                cpu: { $elemMatch: { cpuId: { $in: cpu } } },
+            })
         }
-        if (!!searchModel.CreatedDate && searchModel.CreatedDate.length === 2) {
-            const dateFrom = new Date(searchModel.CreatedDate[0])
-            const startDate = new Date(
-                dateFrom.getFullYear(),
-                dateFrom.getMonth(),
-                dateFrom.getDate(),
-                0,
-                0,
-                0
-            )
-            const dateTo = new Date(searchModel.CreatedDate[1])
-            const endDate = new Date(
-                dateTo.getFullYear(),
-                dateTo.getMonth(),
-                dateTo.getDate(),
-                23,
-                59,
-                59
-            )
-            query.CreatedDate = { $gte: startDate, $lte: endDate }
+        if (!!tagid) {
+            query.tag = { $in: tagid }
         }
-        if (!!searchModel.UpdatedDate && searchModel.UpdatedDate.length === 2) {
-            const dateFrom = new Date(searchModel.UpdatedDate[0])
-            const startDate = new Date(
-                dateFrom.getFullYear(),
-                dateFrom.getMonth(),
-                dateFrom.getDate(),
-                0,
-                0,
-                0
-            )
-            const dateTo = new Date(searchModel.UpdatedDate[1])
-            const endDate = new Date(
-                dateTo.getFullYear(),
-                dateTo.getMonth(),
-                dateTo.getDate(),
-                23,
-                59,
-                59
-            )
-            query.UpdatedDate = { $gte: startDate, $lte: endDate }
+        if (!!manhinh && manhinh.length !== 0) {
+            Object.assign(query.descriptionTable['$elemMatch'], {
+                manhinh: { $elemMatch: { screenId: { $in: manhinh } } },
+            })
         }
-
+        if (!!categoryId && categoryId.length > 0) {
+            query.category = { $in: categoryId }
+        }
         Product.paginate({ $and: [query] }, options).then(function (result) {
             return res.json({
                 returnCode: 1,
@@ -641,7 +583,7 @@ class ProductController {
             Array.isArray(searchModel.Product_Tag) &&
             searchModel.Product_Tag.length > 0
         ) {
-            query.tag = { $elemMatch: { $in: searchModel.Product_Tag}}
+            query.tag = { $elemMatch: { $in: searchModel.Product_Tag } }
         }
 
         // if (
@@ -657,6 +599,17 @@ class ProductController {
                 result,
             })
         })
+    }
+    async getAllProducts(req, res, next) {
+        const allProducts = await Product.find({})
+            .populate({
+                path: 'category',
+                select: '_id name',
+            })
+            .populate({ path: 'tag' })
+        if (allProducts) {
+            res.status(200).json({ allProducts })
+        }
     }
     searchProducts = async (req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', '*')

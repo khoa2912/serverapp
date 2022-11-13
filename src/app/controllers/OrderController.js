@@ -11,14 +11,14 @@ class OrderController {
         let itemTable = [
             {
                 productId: req.body.productId,
-                purchasedQty: req.body.purchasedQty
+                purchasedQty: req.body.purchasedQty,
             },
         ]
 
         let orderStatusTable = [
             {
                 isCompleted: req.body.isCompleted,
-                type: req.body.type
+                type: req.body.type,
             },
         ]
 
@@ -31,8 +31,6 @@ class OrderController {
             user: req.body.user,
             orderStatus: orderStatusTable,
         })
-
-        
 
         ord.save((error, order) => {
             if (error) return res.status(400).json({ error })
@@ -115,10 +113,17 @@ class OrderController {
     }
 
     getOrder = (req, res) => {
-        Order.findOne({ _id: req.body.orderId })
+        let query = {}
+        if (ObjectId.isValid(req.body.orderId)) {
+            query = { _id: req.body.orderId }
+        } else {
+            query = { id: req.body.orderId }
+        }
+        Order.findOne(query)
             .populate('items.productId', '_id name productPicture salePrice')
             .lean()
             .exec((error, order) => {
+                console.log(error)
                 if (error) return res.status(400).json({ error })
                 if (order) {
                     Address.findOne({
