@@ -49,6 +49,13 @@ router.post(
     OrderAdminController.getOrders
 )
 
+router.post(
+    `/getDataOrdersSales`,
+    requireSignin,
+    // adminMiddleware,
+    OrderAdminController.getDataOrdersSales
+)
+
 router.delete(
     '/deleteOrderById',
     requireSignin,

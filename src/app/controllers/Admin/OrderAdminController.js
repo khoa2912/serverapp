@@ -82,6 +82,20 @@ class OrderAdminController {
         }
     }
 
+    getDataOrdersSales = async (req, res) => {
+        try {
+            const orders = await Order.find(
+                { orderStatus: { $elemMatch:{ type: 'delivered', isCompleted : true} }}
+                )
+                .select('_id totalAmount items orderStatus')
+                .populate('items.productId', '_id name salePrice')
+                .exec()
+            res.status(200).json({ orders })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     async getAllOrders(req, res, next) {
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.setHeader('Access-Control-Allow-Headers', '*')
