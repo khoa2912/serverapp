@@ -333,10 +333,6 @@ class ProductController {
     }
 
     getProductRelated = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const products = await Product.find({
                 category: req.body.categoryId,
@@ -344,8 +340,8 @@ class ProductController {
             })
                 .populate({ path: 'tag' })
                 .populate({ path: 'category', select: '_id name' })
+                .select('-description')
                 .exec()
-            myCache.set('allProducts', products)
             res.status(200).json({ products })
         } catch (error) {
             console.log(error)
@@ -465,6 +461,7 @@ class ProductController {
             const products = await Product.find({})
                 .populate({ path: 'tag' })
                 .populate({ path: 'category', select: '_id name' })
+                .select('-description')
                 .exec()
             res.status(200).json({ products })
         } catch (error) {
@@ -507,6 +504,7 @@ class ProductController {
             sort,
             limit: 99,
             lean: true,
+            select:'-description'
         }
 
         if (!!q) {
@@ -558,6 +556,7 @@ class ProductController {
                     select: '_id name',
                 },
             ],
+            select:'-description'
         }
         console.log(req.body)
         const searchModel = req.body
