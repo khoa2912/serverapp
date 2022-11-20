@@ -4,28 +4,28 @@ const screenSchema = new mongoose.Schema(
     {
         screenName: {
             type: String,
-            required: true,
-            trim: true,
+            // required: true,
+            // unique: true,
         },
-        screenCode: {
+        screenSlug: {
             type: String,
             required: true,
             unique: true,
-        },
-        screenDescription: {
-            type: String,
             trim: true,
         },
-        status: {
-            type: String,
-            default: 'active',
+        action: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Action',
+            required: true,
+        }],
+        updatedTime: {
+            type: Date,
         },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         },
-        updateAt: Date,
     },
     { collection: 'Screen' },
     { timestamps: true }

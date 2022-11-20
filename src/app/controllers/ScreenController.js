@@ -2,8 +2,7 @@ const shortid = require('shortid')
 const slugify = require('slugify')
 const { json } = require('express')
 const Screen = require('../models/Screen')
-const NodeCache = require('node-cache')
-const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 })
+const Action = require('../models/Action')
 // eslint-disable-next-line import/order
 const ObjectId = require('mongodb').ObjectID
 // eslint-disable-next-line no-var
@@ -20,12 +19,11 @@ cloudinary.config({
 })
 class ScreenController {
     async createScreen(req, res, next) {
-        const { screenName, screenCode, screenDescription, status } = req.body
         const screen = new Screen({
-            screenName,
-            screenCode,
-            screenDescription,
-            status,
+            screenName: req.body.screenName,
+            screenSlug: slugify(req.body.screenName),
+            action: req.body.action,
+            updatedTime: req.body.updatedTime,
             createdBy: req.user.id,
         })
         // eslint-disable-next-line consistent-return
@@ -38,40 +36,13 @@ class ScreenController {
     }
 
     getScreens = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const screens = await Screen.find({})
-                .select(
-                    '_id screenName screenCode screenDescription status'
-                )
-                .populate(
-                    { path: 'user'}
-                )
+                .populate({ path: 'user' })
                 .exec()
-            myCache.set('allScreens', screens)
             res.status(200).json({ screens })
         } catch (error) {
             console.log(error)
-        }
-    }
-
-    async getAllScreens(req, res, next) {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-        if (myCache.has('allScreens')) {
-            res.status(200).json({ allScreens: myCache.get('allScreens') })
-        } else {
-            const allScreens = await Screen.find({}).populate(
-                { path: 'user', select: '_id firstname lastname' }
-            )
-            if (allScreens) {
-                myCache.set('allScreens', allScreens)
-                res.status(200).json({ allScreens })
-            }
         }
     }
 
@@ -90,30 +61,25 @@ class ScreenController {
     }
 
     async updateScreen(req, res, next) {
-        // const screen = new Screen({
-        //     _id:req.body.id,
-        //     screenName: req.body.screenName,
-        //     screenCode: req.body.screenCode,
-        //     screenDescription: req.body.screenDescription,
-        //     status: req.body.status
-        // })
-        Screen.findOneAndUpdate(
-            { _id: req.body._id },
-            {
-                $set: {
-                    screenName: req.body.screenName,
-                    screenCode: req.body.screenCode,
-                    screenDescription: req.body.screenDescription,
-                    status: req.body.status
+        Screen.findOne({ _id: req.body._id }, function (err, obj) {
+            Screen.updateOne(
+                {
+                    _id: req.body._id,
                 },
-            },
-            { new: true, upsert: true }
-        ).exec((error, result) => {
-            console.log(error)
-            if (error) return res.status(400).json({ error })
-            if (result) {
-                res.status(201).json({ result })
-            }
+                {
+                    $set: {
+                        screenName: req.body.screenName,
+                        screenSlug: slugify(req.body.screenName),
+                        action: req.body.action,
+                        updatedTime: req.body.updatedTime,
+                    },
+                }
+            ).exec((error, screen) => {
+                if (error) return res.status(400).json({ error })
+                if (screen) {
+                    res.status(201).json({ screen })
+                }
+            })
         })
     }
 
@@ -121,23 +87,17 @@ class ScreenController {
         const options = {
             limit: 99,
             lean: true,
+            populate: [
+                { path: 'user' },
+            ],
         }
         console.log(req.body)
         const searchModel = req.body
         const query = {}
         if (
-            !!searchModel.Screen_Name &&
-            Array.isArray(searchModel.Screen_Name) &&
-            searchModel.Screen_Name.length > 0
+            !!searchModel.Screen_Name
         ) {
             query.screenName = { $in: searchModel.Screen_Name }
-        }
-        if (
-            !!searchModel.Description &&
-            Array.isArray(searchModel.Description) &&
-            searchModel.Description.length > 0
-        ) {
-            query.screenDescription = { $in: searchModel.Description }
         }
         Screen.paginate({ $and: [query] }, options).then(function (result) {
             return res.json({
