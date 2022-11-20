@@ -88,7 +88,7 @@ class OrderAdminController {
                 { orderStatus: { $elemMatch:{ type: 'delivered', isCompleted : true} }}
                 )
                 .select('_id totalAmount items orderStatus')
-                .populate('items.productId', '_id name salePrice')
+                .populate('items.productId', '_id name salePrice view')
                 .exec()
             res.status(200).json({ orders })
         } catch (error) {

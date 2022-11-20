@@ -147,7 +147,6 @@ class AuthController {
                         id: user._id,
                         role: user.role,
                     })
-
                     res.status(200).json({
                         message: 'Login success!',
                         token: refresh_token,
@@ -225,6 +224,28 @@ class AuthController {
             res.status(200).json({ users })
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    // async getUserUsing(req, res) {
+    //     // console.log('req User', req.user)
+    //     // try {
+    //     //     const users = await User.find({})
+    //     //         .exec()
+    //     //     res.status(200).json({ users })
+    //     // } catch (error) {
+    //     //     console.log(error)
+    //     // }
+    // }
+
+    async getUserUsing(req, res) {
+        try {
+            console.log('errorr Nel', req.user)
+            const users = await User.find({_id: req.user.id})
+                .exec()
+            res.status(200).json({ users })
+        } catch (err) {
+            console.log(err)
         }
     }
 

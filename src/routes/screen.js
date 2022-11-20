@@ -18,6 +18,4 @@ router.post(
     // requireSignin,
     ScreenHandlers.updateScreen
 )
-router.post('/getAllScreens', requireSignin, ScreenHandlers.getAllScreens)
-router.get('/screens', requireSignin, ScreenHandlers.getAllScreens)
 module.exports = router
