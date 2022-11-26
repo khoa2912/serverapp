@@ -15,6 +15,7 @@ const NodeCache = require('node-cache')
 const myCache = new NodeCache({ stdTTL: 100, checkperiod: 60 })
 var cron = require('node-cron');
 const Product = require('./app/models/Product')
+const totalView = require('./app/models/totalView')
 // connect to db
 app.use(cookieParser())
 
@@ -68,6 +69,29 @@ cron.schedule(
         scheduled: true,
     }
 )
+//View
+cron.schedule('0 0 * * *', async () => {
+    try {
+        console.log('Running a job at 00:00 at Asia/Bangkok timezone');
+        const listPro = await Product.find({})
+        var numberView = 0;
+        for(const e of listPro) {
+            numberView += e.view;
+        }
+        const total = new totalView(
+            {
+                view: numberView,
+            }
+        )
+        // eslint-disable-next-line consistent-return
+        total.save();
+    } catch (error) {
+        console.log(err)  
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Bangkok"
+  });
 app.get('/productWarning',async (req, res) => {
     try {
         if (myCache.has('productWarning')) {

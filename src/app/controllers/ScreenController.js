@@ -21,7 +21,7 @@ class ScreenController {
     async createScreen(req, res, next) {
         const screen = new Screen({
             screenName: req.body.screenName,
-            screenSlug: slugify(req.body.screenName),
+            screenSlug: req.body.screenSlug,
             action: req.body.action,
             updatedTime: req.body.updatedTime,
             createdBy: req.user.id,
@@ -69,7 +69,7 @@ class ScreenController {
                 {
                     $set: {
                         screenName: req.body.screenName,
-                        screenSlug: slugify(req.body.screenName),
+                        screenSlug: req.body.screenSlug,
                         action: req.body.action,
                         updatedTime: req.body.updatedTime,
                     },

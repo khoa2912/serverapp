@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt')
 const shortid = require('shortid')
 const User = require('../../models/User')
 const Role = require('../../models/Role')
+const Screen = require('../../models/Screen')
+const RoleAction = require('../../models/RoleAction')
 const NodeCache = require('node-cache')
 const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 })
 
@@ -65,34 +67,28 @@ class AuthController {
     }
 
     async updateUser(req, res, next) {
-        if(req.actions.includes('Chinh-sua-tai-khoan')) {
-            const password = await bcrypt.hash(req.body.hash_password, 10)
-            User.findOneAndUpdate(
-                { _id: req.body._id },
-                {
-                    $set: {
-                        firstName: req.body.firstName,
-                        lastName: req.body.lastName,
-                        hash_password: password,
-                        role: req.body.role,
-                        contactNumber: req.body.contactNumber,
-                        profilePicture: req.body.profilePicture,
-                        status: req.body.status,
-                    },
+        const password = await bcrypt.hash(req.body.hash_password, 10)
+        User.findOneAndUpdate(
+            { _id: req.body._id },
+            {
+                $set: {
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName,
+                    hash_password: password,
+                    role: req.body.roleId,
+                    contactNumber: req.body.contactNumber,
+                    profilePicture: req.body.profilePicture,
+                    status: req.body.status,
                 },
-                { new: true, upsert: true }
-            ).exec((error, user) => {
-                console.log(error)
-                if (error) return res.status(400).json({ error })
-                if (user) {
-                    res.status(201).json({ user })
-                }
-            })
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
-        }
-        
+            },
+            { new: true, upsert: true }
+        ).exec((error, user) => {
+            console.log(error)
+            if (error) return res.status(400).json({ error })
+            if (user) {
+                res.status(201).json({ user })
+            }
+        })
     }
 
     // [POST] /buyer/signup
@@ -140,6 +136,15 @@ class AuthController {
             if (user) {
                 const isPassword = user.authenticate(req.body.password)
                 let testRole = await Role.find({ _id: user.role })
+
+                let listAction = await RoleAction.findOne({roleId: user.role})
+                var listActionId = [];
+                listAction?.listAction.map((item) => {
+                    listActionId.push(item);
+                })
+                let tempScreen = await Screen.find({action : {$elemMatch : {$in: listActionId}}});
+                const rolescreen = [];
+                tempScreen.map(e => rolescreen.push({screenSlug : e.screenSlug}))
                 if (
                     isPassword && (testRole[0].nameRole !== 'Khách hàng')
                 ) {                    
@@ -150,6 +155,7 @@ class AuthController {
                     res.status(200).json({
                         message: 'Login success!',
                         token: refresh_token,
+                        datamap: rolescreen
                     })
                 } else {
                     return res.status(400).json({
@@ -220,6 +226,7 @@ class AuthController {
 
         try {
             const users = await User.find({})
+                .populate({path : 'role'})
                 .exec()
             res.status(200).json({ users })
         } catch (error) {
@@ -227,21 +234,10 @@ class AuthController {
         }
     }
 
-    // async getUserUsing(req, res) {
-    //     // console.log('req User', req.user)
-    //     // try {
-    //     //     const users = await User.find({})
-    //     //         .exec()
-    //     //     res.status(200).json({ users })
-    //     // } catch (error) {
-    //     //     console.log(error)
-    //     // }
-    // }
-
     async getUserUsing(req, res) {
         try {
-            console.log('errorr Nel', req.user)
             const users = await User.find({_id: req.user.id})
+                .populate({path: 'role'})
                 .exec()
             res.status(200).json({ users })
         } catch (err) {
@@ -272,6 +268,9 @@ class AuthController {
         const options = {
             limit: 99,
             lean: true,
+            populate: [
+                {path: 'role'}
+            ]
         }
         console.log(req.body)
         const searchModel = req.body
