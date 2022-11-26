@@ -11,7 +11,6 @@ const screenSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            trim: true,
         },
         action: [{
             type: mongoose.Schema.Types.ObjectId,

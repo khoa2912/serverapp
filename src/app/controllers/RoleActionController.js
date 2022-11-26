@@ -104,8 +104,7 @@ class RoleActionController {
             limit: 99,
             lean: true,
             populate: [
-                { path: 'role', select: '_id nameRole' },
-                { path: 'action', select: '_id nameAction' },
+                { path: 'roleId', select: '_id nameRole' },
                 { path: 'user', select: '_id firstname lastname' }
             ],
         }
