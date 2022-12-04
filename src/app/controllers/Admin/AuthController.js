@@ -7,9 +7,6 @@ const User = require('../../models/User')
 const Role = require('../../models/Role')
 const Screen = require('../../models/Screen')
 const RoleAction = require('../../models/RoleAction')
-const NodeCache = require('node-cache')
-const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 })
-
 function generateSortOptions(sortFields, sortAscending = true) {
     const sort = {}
     const sortType = sortAscending ? 1 : -1
@@ -38,145 +35,173 @@ function generateSortOptions(sortFields, sortAscending = true) {
 
 class AuthController {
     async createUser(req, res, next) {
-        if (req.actions.includes('Them-tai-khoan')) {
-            const {
-                firstName,
-                lastName,
-                email,
-                hash_password,
-                roleId,
-                contactNumber,
-                profilePicture,
-                status,
-            } = req.body
-            const password = await bcrypt.hash(hash_password, 10)
-            const user = new User({
-                firstName,
-                lastName,
-                userName: email,
-                email,
-                hash_password: password,
-                role: roleId,
-                contactNumber,
-                profilePicture,
-                status,
-                createdBy: req.user.id,
-            })
-            // eslint-disable-next-line consistent-return
-            user.save((error, user) => {
+        try {
+            if (req.actions.includes('Them-tai-khoan')) {
+                const {
+                    firstName,
+                    lastName,
+                    email,
+                    hash_password,
+                    roleId,
+                    contactNumber,
+                    profilePicture,
+                    status,
+                } = req.body
+                const password = await bcrypt.hash(hash_password, 10)
+                const user = new User({
+                    firstName,
+                    lastName,
+                    userName: email,
+                    email,
+                    hash_password: password,
+                    role: roleId,
+                    contactNumber,
+                    profilePicture,
+                    status,
+                    createdBy: req.user.id,
+                })
+                // eslint-disable-next-line consistent-return
+                user.save((error, user) => {
+                    if (error) return res.status(400).json({ error })
+                    if (user) {
+                        res.status(201).json({ user })
+                    }
+                })
+            } else {
+                return res.status(403).send('Khongduquyen')
+            }
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
+    }
+
+    async updateUser(req, res, next) {
+        try {
+            const password = await bcrypt.hash(req.body.hash_password, 10)
+            User.findOneAndUpdate(
+                { _id: req.body._id },
+                {
+                    $set: {
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName,
+                        hash_password: password,
+                        role: req.body.roleId,
+                        contactNumber: req.body.contactNumber,
+                        profilePicture: req.body.profilePicture,
+                        status: req.body.status,
+                    },
+                },
+                { new: true, upsert: true }
+            ).exec((error, user) => {
+                console.log(error)
                 if (error) return res.status(400).json({ error })
                 if (user) {
                     res.status(201).json({ user })
                 }
             })
-        } else {
-            return res.status(403).send('Khongduquyen')
+        } catch (error) {
+            res.status(400).json({ error })
         }
-    }
-
-    async updateUser(req, res, next) {
-        const password = await bcrypt.hash(req.body.hash_password, 10)
-        User.findOneAndUpdate(
-            { _id: req.body._id },
-            {
-                $set: {
-                    firstName: req.body.firstName,
-                    lastName: req.body.lastName,
-                    hash_password: password,
-                    role: req.body.roleId,
-                    contactNumber: req.body.contactNumber,
-                    profilePicture: req.body.profilePicture,
-                    status: req.body.status,
-                },
-            },
-            { new: true, upsert: true }
-        ).exec((error, user) => {
-            console.log(error)
-            if (error) return res.status(400).json({ error })
-            if (user) {
-                res.status(201).json({ user })
-            }
-        })
     }
 
     // [POST] /buyer/signup
     signup(req, res, next) {
-        User.findOne({ email: req.body.email }).exec(async (error, user) => {
-            if (user)
-                return res.status(400).json({
-                    message: 'Admin already registered',
-                })
-            const { role, firstName, lastName, email, password } = req.body
-            // eslint-disable-next-line camelcase
-            const hash_password = await bcrypt.hash(password, 10)
-            // eslint-disable-next-line no-underscore-dangle
-            const _user = new User({
-                role,
-                firstName,
-                lastName,
-                email,
-                // eslint-disable-next-line camelcase
-                hash_password,
-                userName: shortid.generate(),
-                role: 'admin',
-            })
-            // eslint-disable-next-line no-shadow
-            _user.save((error, data) => {
-                if (error) {
-                    return res
-                        .status(400)
-                        .json({ message: 'Something went wrong' })
-                }
+        try {
+            User.findOne({ email: req.body.email }).exec(
+                async (error, user) => {
+                    if (user)
+                        return res.status(400).json({
+                            message: 'Admin already registered',
+                        })
+                    const { role, firstName, lastName, email, password } =
+                        req.body
+                    // eslint-disable-next-line camelcase
+                    const hash_password = await bcrypt.hash(password, 10)
+                    // eslint-disable-next-line no-underscore-dangle
+                    const _user = new User({
+                        role,
+                        firstName,
+                        lastName,
+                        email,
+                        // eslint-disable-next-line camelcase
+                        hash_password,
+                        userName: shortid.generate(),
+                        role: 'admin',
+                    })
+                    // eslint-disable-next-line no-shadow
+                    _user.save((error, data) => {
+                        if (error) {
+                            return res
+                                .status(400)
+                                .json({ message: 'Something went wrong' })
+                        }
 
-                if (data) {
-                    return res.status(201).json({
-                        message: 'Admin created Successfully...!',
+                        if (data) {
+                            return res.status(201).json({
+                                message: 'Admin created Successfully...!',
+                            })
+                        }
                     })
                 }
-            })
-        })
+            )
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     //[POST] /admin/signin
     signin(req, res) {
-        User.findOne({ email: req.body.email }).exec(async (error, user) => {
-            if (error) return res.status(400).json({ error })
-            if (user) {
-                const isPassword = user.authenticate(req.body.password)
-                let testRole = await Role.find({ _id: user.role })
+        try {
+            User.findOne({ email: req.body.email }).exec(
+                async (error, user) => {
+                    if (error) return res.status(400).json({ error })
+                    if (user) {
+                        const isPassword = user.authenticate(req.body.password)
+                        let testRole = await Role.find({ _id: user.role })
 
-                let listAction = await RoleAction.findOne({ roleId: user.role })
-                var listActionId = []
-                listAction?.listAction.map((item) => {
-                    listActionId.push(item)
-                })
-                let tempScreen = await Screen.find({
-                    action: { $elemMatch: { $in: listActionId } },
-                })
-                const rolescreen = []
-                tempScreen.map((e) =>
-                    rolescreen.push({ screenSlug: e.screenSlug })
-                )
-                if (isPassword && testRole[0].nameRole !== 'Khách hàng') {
-                    const refresh_token = createRefreshToken({
-                        id: user._id,
-                        role: user.role,
-                    })
-                    res.status(200).json({
-                        message: 'Login success!',
-                        token: refresh_token,
-                        datamap: rolescreen,
-                        listAction,
-                    })
-                } else {
-                    return res.status(400).json({
-                        message: 'Invalid Password',
-                    })
+                        let listAction = await RoleAction.findOne({
+                            roleId: user.role,
+                        })
+                        var listActionId = []
+                        listAction?.listAction.map((item) => {
+                            listActionId.push(item)
+                        })
+                        let tempScreen = await Screen.find({
+                            action: { $elemMatch: { $in: listActionId } },
+                        })
+                        const rolescreen = []
+                        tempScreen.map((e) =>
+                            rolescreen.push({ screenSlug: e.screenSlug })
+                        )
+                        if (
+                            isPassword &&
+                            testRole[0].nameRole !== 'Khách hàng'
+                        ) {
+                            const refresh_token = createRefreshToken({
+                                id: user._id,
+                                role: user.role,
+                            })
+                            res.status(200).json({
+                                message: 'Login success!',
+                                token: refresh_token,
+                                datamap: rolescreen,
+                                listAction,
+                            })
+                        } else {
+                            return res.status(400).json({
+                                message: 'Invalid Password',
+                            })
+                        }
+                    } else {
+                        return res
+                            .status(400)
+                            .json({ message: 'Something went wrong' })
+                    }
                 }
-            } else {
-                return res.status(400).json({ message: 'Something went wrong' })
-            }
-        })
+            )
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     signout(req, res, next) {
@@ -231,10 +256,6 @@ class AuthController {
     }
 
     getUsers = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const users = await User.find({}).populate({ path: 'role' }).exec()
             res.status(200).json({ users })
@@ -255,104 +276,114 @@ class AuthController {
     }
 
     deleteAccountById = (req, res) => {
-        if (req.actions.includes('Xoa-tai-khoan')) {
-            const { userId } = req.body.payload
-            if (userId) {
-                User.deleteMany({ _id: userId }).exec((error, result) => {
-                    if (error) return res.status(400).json({ error })
-                    if (result) {
-                        res.status(202).json({ result })
-                    }
-                })
+        try {
+            if (req.actions.includes('Xoa-tai-khoan')) {
+                const { userId } = req.body.payload
+                if (userId) {
+                    User.deleteMany({ _id: userId }).exec((error, result) => {
+                        if (error) return res.status(400).json({ error })
+                        if (result) {
+                            res.status(202).json({ result })
+                        }
+                    })
+                } else {
+                    res.status(400).json({ error: 'Params required' })
+                }
             } else {
-                res.status(400).json({ error: 'Params required' })
+                return res.status(403).send('Khongduquyen')
             }
-        } else {
-            return res.status(403).send('Khongduquyen')
+        } catch (error) {
+            return res.status(400).json({ error })
         }
     }
 
     getDataFilterUser = async (req, res, next) => {
-        const options = {
-            limit: 99,
-            lean: true,
-            populate: [{ path: 'role' }],
-        }
-        console.log(req.body)
-        const searchModel = req.body
-        const query = {}
+        try {
+            const options = {
+                limit: 99,
+                lean: true,
+                populate: [{ path: 'role' }],
+            }
+            const searchModel = req.body
+            const query = {}
+            if (
+                !!searchModel.RoleName &&
+                Array.isArray(searchModel.RoleName) &&
+                searchModel.RoleName.length > 0
+            ) {
+                query.role = { $in: searchModel.RoleName }
+            }
 
-        if (
-            !!searchModel.RoleName &&
-            Array.isArray(searchModel.RoleName) &&
-            searchModel.RoleName.length > 0
-        ) {
-            query.role = { $in: searchModel.RoleName }
-        }
+            if (
+                !!searchModel.StatusName &&
+                Array.isArray(searchModel.StatusName) &&
+                searchModel.StatusName.length > 0
+            ) {
+                query.status = { $in: searchModel.StatusName }
+            }
 
-        if (
-            !!searchModel.StatusName &&
-            Array.isArray(searchModel.StatusName) &&
-            searchModel.StatusName.length > 0
-        ) {
-            query.status = { $in: searchModel.StatusName }
-        }
+            if (
+                !!searchModel.Account_Name &&
+                Array.isArray(searchModel.Account_Name) &&
+                searchModel.Account_Name.length > 0
+            ) {
+                query._id = { $in: searchModel.Account_Name }
+            }
 
-        if (
-            !!searchModel.Account_Name &&
-            Array.isArray(searchModel.Account_Name) &&
-            searchModel.Account_Name.length > 0
-        ) {
-            query._id = { $in: searchModel.Account_Name }
-        }
+            if (
+                !!searchModel.Email &&
+                Array.isArray(searchModel.Email) &&
+                searchModel.Email.length > 0
+            ) {
+                query.email = { $in: searchModel.Email }
+            }
 
-        if (
-            !!searchModel.Email &&
-            Array.isArray(searchModel.Email) &&
-            searchModel.Email.length > 0
-        ) {
-            query.email = { $in: searchModel.Email }
-        }
-
-        User.paginate({ $and: [query] }, options).then(function (result) {
-            return res.json({
-                result,
+            User.paginate({ $and: [query] }, options).then(function (result) {
+                return res.json({
+                    result,
+                })
             })
-        })
+        } catch (error) {
+            res.status(400).json({ error })
+        }
     }
 
     search = async function (req, res) {
-        const query = {}
-        const { page } = req.body.searchOptions
-        const limit = parseInt(req.body.searchOptions.limit, 99)
-        const sortFields = req.body.searchOptions.sort
-        const sortAscending = req.body.searchOptions.sortAscending
-        //Tạo điều kiện sắp xếp
-        const sort = await generateSortOptions(sortFields, sortAscending)
-        const options = {
-            //select:   'Status',
-            sort,
-            page,
-            limit,
-            lean: true,
-        }
+        try {
+            const query = {}
+            const { page } = req.body.searchOptions
+            const limit = parseInt(req.body.searchOptions.limit, 99)
+            const sortFields = req.body.searchOptions.sort
+            const sortAscending = req.body.searchOptions.sortAscending
+            //Tạo điều kiện sắp xếp
+            const sort = await generateSortOptions(sortFields, sortAscending)
+            const options = {
+                //select:   'Status',
+                sort,
+                page,
+                limit,
+                lean: true,
+            }
 
-        const searchModel = req.body.searchModel
+            const searchModel = req.body.searchModel
 
-        if (!!searchModel.StatusName && searchModel.StatusName.length > 0) {
-            query.StatusName = { $in: searchModel.StatusName }
-        }
+            if (!!searchModel.StatusName && searchModel.StatusName.length > 0) {
+                query.StatusName = { $in: searchModel.StatusName }
+            }
 
-        if (!!searchModel.RoleName && searchModel.RoleName.length > 0) {
-            query.RoleName = { $in: searchModel.RoleName }
-        }
+            if (!!searchModel.RoleName && searchModel.RoleName.length > 0) {
+                query.RoleName = { $in: searchModel.RoleName }
+            }
 
-        User.paginate({ $and: [query] }, options).then(function (result) {
-            return res.json({
-                returnCode: 1,
-                result,
+            User.paginate({ $and: [query] }, options).then(function (result) {
+                return res.json({
+                    returnCode: 1,
+                    result,
+                })
             })
-        })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     setStatusUser(req, res) {

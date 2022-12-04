@@ -54,7 +54,7 @@ class UserController {
                 }
             )
         } catch (error) {
-            console.log(error)
+            res.status(400).json({ error })
         }
     }
 
@@ -107,15 +107,12 @@ class UserController {
                     }
                 })
         } catch (error) {
-            console.log(error)
+            res.status(400).json({ error })
         }
     }
 
     updateProfile(req, res) {
         const { userId, email } = req.body.data.payload
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
 
         const updateProfile = User.findOneAndUpdate(
             { _id: userId },
@@ -136,10 +133,6 @@ class UserController {
                 activation_token,
                 process.env.ACTIVATION_TOKEN_SECRET
             )
-            res.setHeader('X-Foo', 'bar')
-            res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Headers', '*')
-            res.header('Access-Control-Allow-Credentials', true)
             if (user) {
                 const { firstName, lastName, email, hash_password, userName } =
                     user
@@ -198,10 +191,6 @@ class UserController {
     async getUserInfor(req, res) {
         try {
             const user = await Users.findById(req.user.id).select('-password')
-            res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Headers', '*')
-            res.header('Access-Control-Allow-Credentials', true)
-
             user.hash_password = req.user.pass
             res.json(user)
         } catch (err) {
@@ -213,9 +202,6 @@ class UserController {
         try {
             const { email } = req.body
             const user = await Users.findOne({ email })
-            res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Headers', '*')
-            res.header('Access-Control-Allow-Credentials', true)
             if (!user)
                 return res
                     .status(400)
@@ -234,9 +220,6 @@ class UserController {
     async resetPassword(req, res) {
         try {
             const { password } = req.body
-            res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Headers', '*')
-            res.header('Access-Control-Allow-Credentials', true)
             const passwordHash = await bcrypt.hash(password, 12)
             await Users.findOneAndUpdate(
                 { _id: req.user.id },

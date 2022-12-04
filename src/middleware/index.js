@@ -26,20 +26,7 @@ exports.requireSignin = async (req, res, next) => {
             let actions = await RoleAction.findOne({
                 roleId: user.role,
             }).populate('listAction')
-            console.log(actions, 'actions');
             req.actions = actions.listAction.map((x) => x.actionSlug)
-            //Set Screen
-            // let listAction = await RoleAction.findOne({roleId: user.role})
-            // var listActionId = [];
-            // listAction.listAction.map((item) => {
-            //     listActionId.push(item);
-            // })
-            // let tempScreen = await Screen.find({action : {$elemMatch : {$in: listActionId}}});
-            // const rolescreen = [];
-            // console.log(tempScreen, 'rolescreen')
-            // tempScreen.map(e => rolescreen.push({screenSlug : e.screenSlug}))
-            // req.screenRole = rolescreen;
-            // console.log(req.screenRole, 'rolescreen Filter')
             req.user = user
             return next()
         }

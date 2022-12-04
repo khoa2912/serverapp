@@ -64,18 +64,10 @@ class PageController {
     }
 
     getPages = async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-
         try {
             const pages = await Page.find({})
-                .select(
-                    '_id title description banners products'
-                )
-                .populate(
-                    { path: 'user', select: '_id firstname lastname' }
-                )
+                .select('_id title description banners products')
+                .populate({ path: 'user', select: '_id firstname lastname' })
                 .exec()
             myCache.set('allPages', pages)
             res.status(200).json({ pages })
@@ -85,15 +77,13 @@ class PageController {
     }
 
     async getAllPages(req, res, next) {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
         if (myCache.has('allPages')) {
             res.status(200).json({ allPages: myCache.get('allPages') })
         } else {
-            const allPages = await Page.find({}).populate(
-                { path: 'user', select: '_id firstname lastname' }
-            )
+            const allPages = await Page.find({}).populate({
+                path: 'user',
+                select: '_id firstname lastname',
+            })
             if (allPages) {
                 myCache.set('allPages', allPages)
                 res.status(200).json({ allPages })

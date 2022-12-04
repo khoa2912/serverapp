@@ -44,28 +44,33 @@ function createCategories(categories, parentId = null) {
     })
 } */
 exports.initialData = async (req, res) => {
-    const users = await User.find({}).exec()
-    const categories = await Category.find({}).exec()
-    const products = await Product.find({ createdBy: req.user.id })
-        .select(
-            '_id name regularPrice salePrice quantity quantitySold slug description descriptionTable productPicture category'
+    try {
+        const users = await User.find({}).exec()
+        const categories = await Category.find({}).exec()
+        const products = await Product.find({ createdBy: req.user.id })
+            .select(
+                '_id name regularPrice salePrice quantity quantitySold slug descriptionTable productPicture category'
+            )
+            .populate({ path: 'category', select: '_id name' })
+            .exec()
+        const options = {
+            lean: true,
+            populate: [
+                { path: 'items.productId' },
+                { path: 'addressObject' },
+                { path: 'userObject' },
+            ],
+        }
+        const orders = await Order.paginate({}, options).then(
+            (result) => result
         )
-        .populate({ path: 'category', select: '_id name' })
-        .exec()
-    const options = {
-        lean: true,
-        populate: [
-            { path: 'items.productId' },
-            { path: 'addressObject' },
-            { path: 'userObject' },
-        ],
+        res.status(200).json({
+            categories: createCategories(categories),
+            products,
+            orders: orders.docs,
+            users,
+        })
+    } catch (error) {
+        return res.status(400).json({ error })
     }
-    const orders = await Order.paginate({}, options).then((result) => result)
-    console.log(orders)
-    res.status(200).json({
-        categories: createCategories(categories),
-        products,
-        orders: orders.docs,
-        users,
-    })
 }

@@ -19,20 +19,24 @@ cloudinary.config({
 })
 class ScreenController {
     async createScreen(req, res, next) {
-        const screen = new Screen({
-            screenName: req.body.screenName,
-            screenSlug: req.body.screenSlug,
-            action: req.body.action,
-            updatedTime: req.body.updatedTime,
-            createdBy: req.user.id,
-        })
-        // eslint-disable-next-line consistent-return
-        screen.save((error, screen) => {
-            if (error) return res.status(400).json({ error })
-            if (screen) {
-                res.status(201).json({ screen })
-            }
-        })
+        try {
+            const screen = new Screen({
+                screenName: req.body.screenName,
+                screenSlug: req.body.screenSlug,
+                action: req.body.action,
+                updatedTime: req.body.updatedTime,
+                createdBy: req.user.id,
+            })
+            // eslint-disable-next-line consistent-return
+            screen.save((error, screen) => {
+                if (error) return res.status(400).json({ error })
+                if (screen) {
+                    res.status(201).json({ screen })
+                }
+            })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     getScreens = async (req, res) => {
@@ -42,68 +46,76 @@ class ScreenController {
                 .exec()
             res.status(200).json({ screens })
         } catch (error) {
-            console.log(error)
+            return res.status(400).json({ error })
         }
     }
 
     deleteScreenById = (req, res) => {
-        const { screenId } = req.body.payload
-        if (screenId) {
-            Screen.deleteMany({ _id: screenId }).exec((error, result) => {
-                if (error) return res.status(400).json({ error })
-                if (result) {
-                    res.status(202).json({ result })
-                }
-            })
-        } else {
-            res.status(400).json({ error: 'Params required' })
+        try {
+            const { screenId } = req.body.payload
+            if (screenId) {
+                Screen.deleteMany({ _id: screenId }).exec((error, result) => {
+                    if (error) return res.status(400).json({ error })
+                    if (result) {
+                        res.status(202).json({ result })
+                    }
+                })
+            } else {
+                res.status(400).json({ error: 'Params required' })
+            }
+        } catch (error) {
+            return res.status(400).json({ error })
         }
     }
 
     async updateScreen(req, res, next) {
-        Screen.findOne({ _id: req.body._id }, function (err, obj) {
-            Screen.updateOne(
-                {
-                    _id: req.body._id,
-                },
-                {
-                    $set: {
-                        screenName: req.body.screenName,
-                        screenSlug: req.body.screenSlug,
-                        action: req.body.action,
-                        updatedTime: req.body.updatedTime,
+        try {
+            Screen.findOne({ _id: req.body._id }, function (err, obj) {
+                Screen.updateOne(
+                    {
+                        _id: req.body._id,
                     },
-                }
-            ).exec((error, screen) => {
-                if (error) return res.status(400).json({ error })
-                if (screen) {
-                    res.status(201).json({ screen })
-                }
+                    {
+                        $set: {
+                            screenName: req.body.screenName,
+                            screenSlug: req.body.screenSlug,
+                            action: req.body.action,
+                            updatedTime: req.body.updatedTime,
+                        },
+                    }
+                ).exec((error, screen) => {
+                    if (error) return res.status(400).json({ error })
+                    if (screen) {
+                        res.status(201).json({ screen })
+                    }
+                })
             })
-        })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     getDataFilterScreen = async (req, res, next) => {
-        const options = {
-            limit: 99,
-            lean: true,
-            populate: [
-                { path: 'user' },
-            ],
-        }
-        console.log(req.body)
-        const searchModel = req.body
-        const query = {}
-        if (
-            !!searchModel.Screen_Name
-        ) {
-            query.screenName = { $in: searchModel.Screen_Name }
-        }
-        Screen.paginate({ $and: [query] }, options).then(function (result) {
-            return res.json({
-                result,
+        try {
+            const options = {
+                limit: 99,
+                lean: true,
+                populate: [{ path: 'user' }],
+            }
+            console.log(req.body)
+            const searchModel = req.body
+            const query = {}
+            if (!!searchModel.Screen_Name) {
+                query.screenName = { $in: searchModel.Screen_Name }
+            }
+            Screen.paginate({ $and: [query] }, options).then(function (result) {
+                return res.json({
+                    result,
+                })
             })
-        })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 }
 module.exports = new ScreenController()

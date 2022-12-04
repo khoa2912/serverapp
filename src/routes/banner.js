@@ -5,9 +5,13 @@ const router = express.Router()
 const { requireSignin } = require('../middleware')
 
 router.post('/createBanner', requireSignin, BannerController.createBanner)
-router.post(`/getDataFilterBanner`, requireSignin, BannerController.getDataFilterBanner)
-router.post(`/getBanners`, requireSignin, BannerController.getBanners)
-router.post(`/getAllBanners`, requireSignin, BannerController.getAllBanners)
+router.post(
+    `/getDataFilterBanner`,
+    requireSignin,
+    BannerController.getDataFilterBanner
+)
+router.post(`/getBanners`, BannerController.getBanners)
+router.post(`/getAllBanners`, BannerController.getAllBanners)
 router.post(
     '/updateBanner',
     // requireSignin,

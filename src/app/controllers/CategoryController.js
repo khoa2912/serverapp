@@ -31,111 +31,129 @@ function createCategories(categories, parentId = null) {
 
 class CategoryController {
     create(req, res, next) {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', '*')
-        res.header('Access-Control-Allow-Credentials', true)
-        if (req.actions.includes('Them-nhan-hang')) {
-            const categoryObject = {
-                name: req.body.name,
-                slug: `${slugify(req.body.name)}-${shortid.generate()}`,
-                categoryImage: req.body.categoryImage,
-            }
-            if (req.file) {
-                categoryObject.categoryImage = `/uploads/${req.file.filename}`
-            }
-            if (req.body.parentId) {
-                categoryObject.parentId = req.body.parentId
-            }
-            const cat = new Category(categoryObject)
-            // eslint-disable-next-line consistent-return
-            cat.save((error, category) => {
-                if (error) return res.status(400).json({ error })
-                if (category) {
-                    return res.status(201).json({ category })
+        try {
+            if (req.actions.includes('Them-nhan-hang')) {
+                const categoryObject = {
+                    name: req.body.name,
+                    slug: `${slugify(req.body.name)}-${shortid.generate()}`,
+                    categoryImage: req.body.categoryImage,
                 }
-            })
-        } else {
-            return res.status(403).send('Khongduquyen')
+                if (req.file) {
+                    categoryObject.categoryImage = `/uploads/${req.file.filename}`
+                }
+                if (req.body.parentId) {
+                    categoryObject.parentId = req.body.parentId
+                }
+                const cat = new Category(categoryObject)
+                // eslint-disable-next-line consistent-return
+                cat.save((error, category) => {
+                    if (error) return res.status(400).json({ error })
+                    if (category) {
+                        return res.status(201).json({ category })
+                    }
+                })
+            } else {
+                return res.status(403).send('Khongduquyen')
+            }
+        } catch (error) {
+            return res.status(400).json({ error })
         }
     }
 
     getCategories(req, res, next) {
         // eslint-disable-next-line consistent-return
-        Category.find({}).exec((error, categories) => {
-            if (error) return res.status(400).json({ error })
-            if (categories) {
-                const categoryList = createCategories(categories)
-                res.status(200).json({ categoryList })
-            }
-        })
+        try {
+            Category.find({}).exec((error, categories) => {
+                if (error) return res.status(400).json({ error })
+                if (categories) {
+                    const categoryList = createCategories(categories)
+                    res.status(200).json({ categoryList })
+                }
+            })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     async updateCategories(req, res, next) {
-        if (req.actions.includes('Chinh-sua-nhan-hang')) {
-            Category.findOne({ _id: req.body._id }, function (err, obj) {
-                console.log(req.body)
-                const tempSlug = `${slugify(
-                    req.body.nameCategory
-                )}-${shortid.generate()}`
-                console.log(tempSlug)
-                Category.updateOne(
-                    {
-                        _id: req.body._id,
-                    },
-                    {
-                        $set: {
-                            name: req.body.nameCategory,
-                            slug: tempSlug,
-                            categoryImage: req.body.categoryImage,
+        try {
+            if (req.actions.includes('Chinh-sua-nhan-hang')) {
+                Category.findOne({ _id: req.body._id }, function (err, obj) {
+                    console.log(req.body)
+                    const tempSlug = `${slugify(
+                        req.body.nameCategory
+                    )}-${shortid.generate()}`
+                    console.log(tempSlug)
+                    Category.updateOne(
+                        {
+                            _id: req.body._id,
                         },
-                    }
-                ).exec((error, category) => {
-                    if (error) return res.status(400).json({ error })
-                    if (category) {
-                        res.status(201).json({ category })
-                    }
+                        {
+                            $set: {
+                                name: req.body.nameCategory,
+                                slug: tempSlug,
+                                categoryImage: req.body.categoryImage,
+                            },
+                        }
+                    ).exec((error, category) => {
+                        if (error) return res.status(400).json({ error })
+                        if (category) {
+                            res.status(201).json({ category })
+                        }
+                    })
                 })
-            })
-        } else {
-            return res.status(403).send('Khongduquyen')
+            } else {
+                return res.status(403).send('Khongduquyen')
+            }
+        } catch (error) {
+            return res.status(400).json({ error })
         }
     }
 
     deleteCategories = (req, res) => {
-        if (req.actions.includes('Xoa-nhan-hang')) {
-            Category.deleteOne({ _id: req.body.data.ids._id }).exec(
-                (error, result) => {
-                    if (error) return res.status(400).json({ error })
-                    if (result) {
-                        res.status(202).json({ result })
+        try {
+            if (req.actions.includes('Xoa-nhan-hang')) {
+                Category.deleteOne({ _id: req.body.data.ids._id }).exec(
+                    (error, result) => {
+                        if (error) return res.status(400).json({ error })
+                        if (result) {
+                            res.status(202).json({ result })
+                        }
                     }
-                }
-            )
-        } else {
-            return res.status(403).send('Khongduquyen')
+                )
+            } else {
+                return res.status(403).send('Khongduquyen')
+            }
+        } catch (error) {
+            return res.status(400).json({ error })
         }
     }
 
     getDataFilter = async (req, res, next) => {
-        const options = {
-            limit: 99,
-            lean: true,
-        }
-        console.log(req.body)
-        const searchModel = req.body
-        const query = {}
-        if (
-            !!searchModel.CategoryName &&
-            Array.isArray(searchModel.CategoryName) &&
-            searchModel.CategoryName.length > 0
-        ) {
-            query.name = { $in: searchModel.CategoryName }
-        }
-        Category.paginate({ $and: [query] }, options).then(function (result) {
-            return res.json({
-                result: createCategories(result.docs),
+        try {
+            const options = {
+                limit: 99,
+                lean: true,
+            }
+            const searchModel = req.body
+            const query = {}
+            if (
+                !!searchModel.CategoryName &&
+                Array.isArray(searchModel.CategoryName) &&
+                searchModel.CategoryName.length > 0
+            ) {
+                query.name = { $in: searchModel.CategoryName }
+            }
+            Category.paginate({ $and: [query] }, options).then(function (
+                result
+            ) {
+                return res.json({
+                    result: createCategories(result.docs),
+                })
             })
-        })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 }
 

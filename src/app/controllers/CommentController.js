@@ -10,23 +10,25 @@ const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 })
 // eslint-disable-next-line no-var
 class CommentController {
     async create(req, res, next) {
-        console.log(req)
-        const { content, productID, Avatar, author } = req.body.payload
-        console.log(productID)
-        const comment = new Comment({
-            productID,
-            content,
-            Avatar,
-            author,
-            createdBy: req.user.id,
-        })
-        // eslint-disable-next-line consistent-return
-        comment.save((error, display) => {
-            if (error) return res.status(400).json({ error })
-            if (display) {
-                res.status(201).json({ display })
-            }
-        })
+        try {
+            const { content, productID, Avatar, author } = req.body.payload
+            const comment = new Comment({
+                productID,
+                content,
+                Avatar,
+                author,
+                createdBy: req.user.id,
+            })
+            // eslint-disable-next-line consistent-return
+            comment.save((error, display) => {
+                if (error) return res.status(400).json({ error })
+                if (display) {
+                    res.status(201).json({ display })
+                }
+            })
+        } catch (error) {
+            res.status(400).json({ error: 'error' })
+        }
     }
 
     async getAllComment(req, res, next) {

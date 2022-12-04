@@ -9,27 +9,28 @@ const ObjectId = require('mongodb')
 // eslint-disable-next-line no-var
 class TotalViewController {
     async createTotalView(req, res, next) {
-        const total = new totalView(
-            {
+        try {
+            const total = new totalView({
                 view: req.body.totalView,
-            }
-        )
-        // eslint-disable-next-line consistent-return
-        total.save((error, total) => {
-            if (error) return res.status(400).json({ error })
-            if (total) {
-                res.status(201).json({ total })
-            }
-        })
+            })
+            // eslint-disable-next-line consistent-return
+            total.save((error, total) => {
+                if (error) return res.status(400).json({ error })
+                if (total) {
+                    res.status(201).json({ total })
+                }
+            })
+        } catch (error) {
+            return res.status(400).json({ error })
+        }
     }
 
     getTotalViews = async (req, res) => {
         try {
-            const total = await totalView.find({})
-                .exec()
+            const total = await totalView.find({}).exec()
             res.status(200).json({ total })
         } catch (error) {
-            console.log(error)
+            return res.status(400).json({ error })
         }
     }
 }
