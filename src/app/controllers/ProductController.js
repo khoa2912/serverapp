@@ -299,14 +299,16 @@ class ProductController {
 
     getProductRelated = async (req, res) => {
         try {
+            console.log(req.body)
             const products = await Product.find({
-                category: req.body.categoryId,
-                _id: { $nin: [req.body.productId] },
+                category: req.body.data.category,
+                _id: { $nin: [req.body.data.productId] },
             })
                 .populate({ path: 'tag' })
                 .populate({ path: 'category', select: '_id name' })
                 .select('-description')
                 .exec()
+            console.log(products)
             return res.status(200).json({ products })
         } catch (error) {
             return res.status(400).json({ error })
@@ -398,12 +400,12 @@ class ProductController {
                 ).exec((error, product) => {
                     if (error) return res.status(400).json({ error })
                     if (product) {
-                        Product.findOne(
-                            { _id: productId },
-                            function (err, obj) {
+                        Product.findOne({ _id: productId })
+                            .populate('category')
+                            .exec((err, obj) => {
                                 return res.status(201).json({ product: obj })
-                            }
-                        )
+                            })
+
                         // res.status(201).json({ product })
                     }
                 })

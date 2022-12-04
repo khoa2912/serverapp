@@ -367,7 +367,7 @@ const createActivationToken = (payload) =>
 
 const createAccessToken = (payload) =>
     jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '40m',
+        expiresIn: '10s',
     })
 
 const createRefreshToken = (payload) =>
