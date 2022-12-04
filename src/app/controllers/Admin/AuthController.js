@@ -38,15 +38,24 @@ function generateSortOptions(sortFields, sortAscending = true) {
 
 class AuthController {
     async createUser(req, res, next) {
-        if(req.actions.includes('Them-tai-khoan')) {
-            const { firstName, lastName, email, hash_password, roleId, contactNumber, profilePicture, status } = req.body
-            const password = await bcrypt.hash(hash_password, 10)
-            const user = new User ({
+        if (req.actions.includes('Them-tai-khoan')) {
+            const {
                 firstName,
                 lastName,
-                userName:email,
                 email,
-                hash_password:password,
+                hash_password,
+                roleId,
+                contactNumber,
+                profilePicture,
+                status,
+            } = req.body
+            const password = await bcrypt.hash(hash_password, 10)
+            const user = new User({
+                firstName,
+                lastName,
+                userName: email,
+                email,
+                hash_password: password,
                 role: roleId,
                 contactNumber,
                 profilePicture,
@@ -60,9 +69,8 @@ class AuthController {
                     res.status(201).json({ user })
                 }
             })
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
@@ -137,17 +145,19 @@ class AuthController {
                 const isPassword = user.authenticate(req.body.password)
                 let testRole = await Role.find({ _id: user.role })
 
-                let listAction = await RoleAction.findOne({roleId: user.role})
-                var listActionId = [];
+                let listAction = await RoleAction.findOne({ roleId: user.role })
+                var listActionId = []
                 listAction?.listAction.map((item) => {
-                    listActionId.push(item);
+                    listActionId.push(item)
                 })
-                let tempScreen = await Screen.find({action : {$elemMatch : {$in: listActionId}}});
-                const rolescreen = [];
-                tempScreen.map(e => rolescreen.push({screenSlug : e.screenSlug}))
-                if (
-                    isPassword && (testRole[0].nameRole !== 'Khách hàng')
-                ) {                    
+                let tempScreen = await Screen.find({
+                    action: { $elemMatch: { $in: listActionId } },
+                })
+                const rolescreen = []
+                tempScreen.map((e) =>
+                    rolescreen.push({ screenSlug: e.screenSlug })
+                )
+                if (isPassword && testRole[0].nameRole !== 'Khách hàng') {
                     const refresh_token = createRefreshToken({
                         id: user._id,
                         role: user.role,
@@ -155,7 +165,8 @@ class AuthController {
                     res.status(200).json({
                         message: 'Login success!',
                         token: refresh_token,
-                        datamap: rolescreen
+                        datamap: rolescreen,
+                        listAction,
                     })
                 } else {
                     return res.status(400).json({
@@ -225,9 +236,7 @@ class AuthController {
         res.header('Access-Control-Allow-Credentials', true)
 
         try {
-            const users = await User.find({})
-                .populate({path : 'role'})
-                .exec()
+            const users = await User.find({}).populate({ path: 'role' }).exec()
             res.status(200).json({ users })
         } catch (error) {
             console.log(error)
@@ -236,8 +245,8 @@ class AuthController {
 
     async getUserUsing(req, res) {
         try {
-            const users = await User.find({_id: req.user.id})
-                .populate({path: 'role'})
+            const users = await User.find({ _id: req.user.id })
+                .populate({ path: 'role' })
                 .exec()
             res.status(200).json({ users })
         } catch (err) {
@@ -246,7 +255,7 @@ class AuthController {
     }
 
     deleteAccountById = (req, res) => {
-        if(req.actions.includes('Xoa-tai-khoan')) {
+        if (req.actions.includes('Xoa-tai-khoan')) {
             const { userId } = req.body.payload
             if (userId) {
                 User.deleteMany({ _id: userId }).exec((error, result) => {
@@ -258,9 +267,8 @@ class AuthController {
             } else {
                 res.status(400).json({ error: 'Params required' })
             }
-        } 
-        else {
-            return res.status(403).send('Khongduquyen');
+        } else {
+            return res.status(403).send('Khongduquyen')
         }
     }
 
@@ -268,9 +276,7 @@ class AuthController {
         const options = {
             limit: 99,
             lean: true,
-            populate: [
-                {path: 'role'}
-            ]
+            populate: [{ path: 'role' }],
         }
         console.log(req.body)
         const searchModel = req.body
@@ -333,17 +339,11 @@ class AuthController {
 
         const searchModel = req.body.searchModel
 
-        if (
-            !!searchModel.StatusName &&
-            searchModel.StatusName.length > 0
-        ) {
+        if (!!searchModel.StatusName && searchModel.StatusName.length > 0) {
             query.StatusName = { $in: searchModel.StatusName }
         }
 
-        if (
-            !!searchModel.RoleName &&
-            searchModel.RoleName.length > 0
-        ) {
+        if (!!searchModel.RoleName && searchModel.RoleName.length > 0) {
             query.RoleName = { $in: searchModel.RoleName }
         }
 

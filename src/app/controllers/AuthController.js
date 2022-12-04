@@ -23,49 +23,59 @@ const { CLIENT_URL } = process.env
 class UserController {
     // [POST] /buyer/signup
     signup(req, res) {
-        User.findOne({ email: req.body.email }).exec(async (error, user) => {
-            res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Headers', '*')
-            res.header('Access-Control-Allow-Credentials', true)
-            if (user)
-                return res.status(409).json({
-                    error: 'datontai',
-                })
-            const { firstName, lastName, email, password } = req.body
-            const hash_password = await bcrypt.hash(password, 10)
+        try {
+            User.findOne({ email: req.body.email }).exec(
+                async (error, user) => {
+                    res.setHeader('Access-Control-Allow-Origin', '*')
+                    res.setHeader('Access-Control-Allow-Headers', '*')
+                    res.header('Access-Control-Allow-Credentials', true)
+                    if (user)
+                        return res.status(409).json({
+                            error: 'datontai',
+                        })
+                    const { firstName, lastName, email, password } = req.body
+                    const hash_password = await bcrypt.hash(password, 10)
 
-            const _user = {
-                firstName,
-                lastName,
-                email,
-                hash_password,
-                userName: shortid.generate(),
-            }
-            const activation_token = createActivationToken(_user)
-            const url = `${CLIENT_URL}/user/activate/${activation_token}`
-            sendMail(email, url, 'Verify your email address')
+                    const _user = {
+                        firstName,
+                        lastName,
+                        email,
+                        hash_password,
+                        userName: shortid.generate(),
+                    }
+                    const activation_token = createActivationToken(_user)
+                    const url = `${CLIENT_URL}/user/activate/${activation_token}`
+                    sendMail(email, url, 'Verify your email address')
 
-            res.status(201).json({
-                message:
-                    'Đăng ký thành công. Vui lòng truy cập email để kích hoạt!!!',
-            })
-        })
+                    res.status(201).json({
+                        message:
+                            'Đăng ký thành công. Vui lòng truy cập email để kích hoạt!!!',
+                    })
+                }
+            )
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     // [POST] /buyer/signin
     signin(req, res, next) {
         try {
-            User.findOne({ email: req.body.email }).exec(
-                async (error, user) => {
+            User.findOne({ email: req.body.email })
+                .populate('role')
+                .exec(async (error, user) => {
                     if (error)
                         return res.status(400).json({ error: 'datontai' })
                     if (user) {
+                        console.log(user)
                         const validPassword = await bcrypt.compare(
                             req.body.password,
                             user.hash_password
                         )
-                        let testRole = await Role.find({ _id: user.role })
-                        if (validPassword && testRole[0].nameRole === 'Khách hàng') {
+                        if (
+                            validPassword &&
+                            user?.role?.nameRole === 'Khách hàng'
+                        ) {
                             const refresh_token = createRefreshToken({
                                 id: user._id,
                                 role: user.role,
@@ -85,18 +95,6 @@ class UserController {
                                 message: 'Đăng nhập thành công!',
                                 token: refresh_token,
                             })
-                            /* const { firstName, lastName, email, role, fullName, _id } = user;
-             res.status(200).json({
-              token: access_token,
-              user: {
-                firstName,
-                lastName,
-                email,
-                role,
-                fullName,
-                _id,
-              },
-            });  */
                         } else {
                             return res.status(400).json({
                                 message: 'Sai mật khẩu vui lòng nhập lại!!!',
@@ -107,8 +105,7 @@ class UserController {
                             message: 'Có gì đó không ổn rồi quý khách ơi',
                         })
                     }
-                }
-            )
+                })
         } catch (error) {
             console.log(error)
         }
@@ -161,7 +158,7 @@ class UserController {
                             message: 'Có gì đó không ổn rồi khách ơi',
                         })
                     }
-                    res.status(201).json({
+                    return res.status(201).json({
                         message: 'Tài khoản đã được đăng ký thành công!!',
                     })
                 })
@@ -184,12 +181,13 @@ class UserController {
                         return res
                             .status(400)
                             .json({ msg: 'Please login now!' })
+                    // eslint-disable-next-line camelcase, no-use-before-define
                     const access_token = createAccessToken({
                         id: user.id,
                         role: user.role,
                         pass: user.pass,
                     })
-                    res.json({ access_token })
+                    return res.json({ access_token })
                 }
             )
         } catch (err) {
